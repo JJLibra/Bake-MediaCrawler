@@ -35,7 +35,7 @@ class WeiboClient:
 
     def __init__(
         self,
-        timeout=30,  # 若开启爬取媒体选项，weibo 的图片需要更久的超时时间
+        timeout=60,  # 若开启爬取媒体选项，weibo 的图片需要更久的超时时间
         proxy=None,
         *,
         headers: Dict[str, str],
@@ -248,12 +248,17 @@ class WeiboClient:
         final_uri = (f"{self._image_agent_host}"
                      f"{image_url}")
         async with httpx.AsyncClient(proxy=self.proxy) as client:
-            response = await client.request("GET", final_uri, timeout=self.timeout)
-            if not response.reason_phrase == "OK":
-                utils.logger.error(f"[WeiboClient.get_note_image] request {final_uri} err, res:{response.text}")
+            try:
+                response = await client.request("GET", final_uri, timeout=self.timeout)
+                response.raise_for_status()
+                if not response.reason_phrase == "OK":
+                    utils.logger.error(f"[WeiboClient.get_note_image] request {final_uri} err, res:{response.text}")
+                    return None
+                else:
+                    return response.content
+            except httpx.HTTPError as exc:  # some wrong when call httpx.request method, such as connection error, client error, server error or response status code is not 2xx
+                utils.logger.error(f"[DouYinClient.get_aweme_media] {exc.__class__.__name__} for {exc.request.url} - {exc}")    # 保留原始异常类型名称，以便开发者调试
                 return None
-            else:
-                return response.content
 
     async def get_creator_container_info(self, creator_id: str) -> Dict:
         """
