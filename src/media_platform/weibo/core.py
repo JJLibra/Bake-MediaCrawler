@@ -293,7 +293,7 @@ class WeiboCrawler(AbstractCrawler):
                 # Get all note information of the creator
                 all_notes_list = await self.wb_client.get_all_notes_by_creator_id(
                     creator_id=user_id,
-                    container_id=createor_info_res.get("lfid_container_id"),
+                    container_id=f"107603{user_id}",
                     crawl_interval=0,
                     callback=weibo_store.batch_update_weibo_notes,
                 )
@@ -343,10 +343,11 @@ class WeiboCrawler(AbstractCrawler):
                     "height": 1080
                 },
                 user_agent=user_agent,
+                channel="chrome",  # 使用系统的Chrome稳定版
             )
             return browser_context
         else:
-            browser = await chromium.launch(headless=headless, proxy=playwright_proxy)  # type: ignore
+            browser = await chromium.launch(headless=headless, proxy=playwright_proxy, channel="chrome")  # type: ignore
             browser_context = await browser.new_context(viewport={"width": 1920, "height": 1080}, user_agent=user_agent)
             return browser_context
 
