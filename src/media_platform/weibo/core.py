@@ -83,8 +83,10 @@ class WeiboCrawler(AbstractCrawler):
 
 
             self.context_page = await self.browser_context.new_page()
-            await self.context_page.goto(self.mobile_index_url)
+            await self.context_page.goto(self.index_url)
+            await asyncio.sleep(2)
 
+           
             # Create a client to interact with the xiaohongshu website.
             self.wb_client = await self.create_weibo_client(httpx_proxy_format)
             if not await self.wb_client.pong():
@@ -100,8 +102,12 @@ class WeiboCrawler(AbstractCrawler):
                 # 登录成功后重定向到手机端的网站，再更新手机端登录成功的cookie
                 utils.logger.info("[WeiboCrawler.start] redirect weibo mobile homepage and update cookies on mobile platform")
                 await self.context_page.goto(self.mobile_index_url)
-                await asyncio.sleep(2)
-                await self.wb_client.update_cookies(browser_context=self.browser_context)
+                await asyncio.sleep(3)
+                # 只获取移动端的 cookies，避免 PC 端和移动端 cookies 混淆
+                await self.wb_client.update_cookies(
+                    browser_context=self.browser_context,
+                    urls=[self.mobile_index_url]
+                )
 
             crawler_type_var.set(config.CRAWLER_TYPE)
             if config.CRAWLER_TYPE == "search":
@@ -307,7 +313,7 @@ class WeiboCrawler(AbstractCrawler):
     async def create_weibo_client(self, httpx_proxy: Optional[str]) -> WeiboClient:
         """Create xhs client"""
         utils.logger.info("[WeiboCrawler.create_weibo_client] Begin create weibo API client ...")
-        cookie_str, cookie_dict = utils.convert_cookies(await self.browser_context.cookies())
+        cookie_str, cookie_dict = utils.convert_cookies(await self.browser_context.cookies(urls=[self.mobile_index_url]))
         weibo_client_obj = WeiboClient(
             proxy=httpx_proxy,
             headers={
