@@ -37,6 +37,7 @@ from tools.time_util import get_current_timestamp
 from var import crawler_type_var
 from database.mongodb_store_base import MongoDBStoreBase
 from tools import utils
+from store.excel_store_base import ExcelStoreBase
 
 class XhsCsvStoreImplement(AbstractStore):
     def __init__(self, **kwargs):
@@ -336,3 +337,14 @@ class XhsMongoStoreImplement(AbstractStore):
             data=creator_item
         )
         utils.logger.info(f"[XhsMongoStoreImplement.store_creator] Saved creator {user_id} to MongoDB")
+
+
+class XhsExcelStoreImplement:
+    """小红书Excel存储实现 - 全局单例"""
+
+    def __new__(cls, *args, **kwargs):
+        from store.excel_store_base import ExcelStoreBase
+        return ExcelStoreBase.get_instance(
+            platform="xhs",
+            crawler_type=crawler_type_var.get()
+        )

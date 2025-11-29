@@ -84,6 +84,15 @@ async def main():
     crawler = CrawlerFactory.create_crawler(platform=config.PLATFORM)
     await crawler.start()
 
+    # Flush Excel data if using Excel export
+    if config.SAVE_DATA_OPTION == "excel":
+        try:
+            from store.excel_store_base import ExcelStoreBase
+            ExcelStoreBase.flush_all()
+            print("[Main] Excel files saved successfully")
+        except Exception as e:
+            print(f"[Main] Error flushing Excel data: {e}")
+
     # Generate wordcloud after crawling is complete
     # Only for JSON save mode
     if config.SAVE_DATA_OPTION == "json" and config.ENABLE_GET_WORDCLOUD:
