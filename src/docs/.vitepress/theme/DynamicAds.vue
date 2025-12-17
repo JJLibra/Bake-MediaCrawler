@@ -11,9 +11,9 @@ const fetchAds = async () => {
   return [
     {
       id: 1,
-      imageUrl: 'https://github.com/NanmiCoder/MediaCrawler/raw/main/docs/static/images/auto_test.png',
-      landingUrl: 'https://item.jd.com/10124939676219.html',
-      text: '给好朋友虫师新书站台推荐 - 基于Python的自动化测试框架设计'
+      imageUrl: 'https://github.com/NanmiCoder/MediaCrawler/raw/main/docs/static/images/MediaCrawlerPro.jpg',
+      landingUrl: 'https://github.com/MediaCrawlerPro',
+      text: '👏欢迎大家来订阅MediaCrawlerPro源代码'
     }
   ]
 }
@@ -63,7 +63,8 @@ onUnmounted(() => {
 }
 
 .ad-image {
-  max-width: 130px;
+  max-width: 100%;
+  width: 200px;
   height: auto;
   margin-bottom: 0.5rem;
 }
