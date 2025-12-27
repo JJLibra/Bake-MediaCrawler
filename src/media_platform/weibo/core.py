@@ -20,7 +20,7 @@
 # -*- coding: utf-8 -*-
 # @Author  : relakkes@gmail.com
 # @Time    : 2023/12/23 15:41
-# @Desc    : 微博爬虫主流程代码
+# @Desc    : Weibo crawler main workflow code
 
 import asyncio
 import os
@@ -63,7 +63,7 @@ class WeiboCrawler(AbstractCrawler):
         self.user_agent = utils.get_user_agent()
         self.mobile_user_agent = utils.get_mobile_user_agent()
         self.cdp_manager = None
-        self.ip_proxy_pool = None  # 代理IP池，用于代理自动刷新
+        self.ip_proxy_pool = None  # Proxy IP pool for automatic proxy refresh
 
     async def start(self):
         playwright_proxy_format, httpx_proxy_format = None, None
@@ -73,9 +73,9 @@ class WeiboCrawler(AbstractCrawler):
             playwright_proxy_format, httpx_proxy_format = utils.format_proxy_info(ip_proxy_info)
 
         async with async_playwright() as playwright:
-            # 根据配置选择启动模式
+            # Select launch mode based on configuration
             if config.ENABLE_CDP_MODE:
-                utils.logger.info("[WeiboCrawler] 使用CDP模式启动浏览器")
+                utils.logger.info("[WeiboCrawler] Launching browser with CDP mode")
                 self.browser_context = await self.launch_browser_with_cdp(
                     playwright,
                     playwright_proxy_format,
@@ -83,7 +83,7 @@ class WeiboCrawler(AbstractCrawler):
                     headless=config.CDP_HEADLESS,
                 )
             else:
-                utils.logger.info("[WeiboCrawler] 使用标准模式启动浏览器")
+                utils.logger.info("[WeiboCrawler] Launching browser with standard mode")
                 # Launch a browser context.
                 chromium = playwright.chromium
                 self.browser_context = await self.launch_browser(chromium, None, self.mobile_user_agent, headless=config.HEADLESS)
@@ -109,11 +109,11 @@ class WeiboCrawler(AbstractCrawler):
                 )
                 await login_obj.begin()
 
-                # 登录成功后重定向到手机端的网站，再更新手机端登录成功的cookie
+                # After successful login, redirect to mobile website and update mobile cookies
                 utils.logger.info("[WeiboCrawler.start] redirect weibo mobile homepage and update cookies on mobile platform")
                 await self.context_page.goto(self.mobile_index_url)
                 await asyncio.sleep(3)
-                # 只获取移动端的 cookies，避免 PC 端和移动端 cookies 混淆
+                # Only get mobile cookies to avoid confusion between PC and mobile cookies
                 await self.wb_client.update_cookies(
                     browser_context=self.browser_context,
                     urls=[self.mobile_index_url]
@@ -170,6 +170,8 @@ class WeiboCrawler(AbstractCrawler):
                 search_res = await self.wb_client.get_note_by_keyword(keyword=keyword, page=page, search_type=search_type)
                 note_id_list: List[str] = []
                 note_list = filter_search_result_card(search_res.get("cards"))
+                # If full text fetching is enabled, batch get full text of posts
+                note_list = await self.batch_get_notes_full_text(note_list)
                 for note_item in note_list:
                     if note_item:
                         mblog: Dict = note_item.get("mblog")
@@ -313,12 +315,18 @@ class WeiboCrawler(AbstractCrawler):
                     raise DataFetchError("Get creator info error")
                 await weibo_store.save_creator(user_id, user_info=createor_info)
 
+                # Create a wrapper callback to get full text before saving data
+                async def save_notes_with_full_text(note_list: List[Dict]):
+                    # If full text fetching is enabled, batch get full text first
+                    updated_note_list = await self.batch_get_notes_full_text(note_list)
+                    await weibo_store.batch_update_weibo_notes(updated_note_list)
+
                 # Get all note information of the creator
                 all_notes_list = await self.wb_client.get_all_notes_by_creator_id(
                     creator_id=user_id,
                     container_id=f"107603{user_id}",
                     crawl_interval=0,
-                    callback=weibo_store.batch_update_weibo_notes,
+                    callback=save_notes_with_full_text,
                 )
 
                 note_ids = [note_item.get("mblog", {}).get("id") for note_item in all_notes_list if note_item.get("mblog", {}).get("id")]
@@ -342,7 +350,7 @@ class WeiboCrawler(AbstractCrawler):
             },
             playwright_page=self.context_page,
             cookie_dict=cookie_dict,
-            proxy_ip_pool=self.ip_proxy_pool,  # 传递代理池用于自动刷新
+            proxy_ip_pool=self.ip_proxy_pool,  # Pass proxy pool for automatic refresh
         )
         return weibo_client_obj
 
@@ -367,7 +375,7 @@ class WeiboCrawler(AbstractCrawler):
                     "height": 1080
                 },
                 user_agent=user_agent,
-                channel="chrome",  # 使用系统的Chrome稳定版
+                channel="chrome",  # Use system's Chrome stable version
             )
             return browser_context
         else:
@@ -383,7 +391,7 @@ class WeiboCrawler(AbstractCrawler):
         headless: bool = True,
     ) -> BrowserContext:
         """
-        使用CDP模式启动浏览器
+        Launch browser with CDP mode
         """
         try:
             self.cdp_manager = CDPBrowserManager()
@@ -394,21 +402,76 @@ class WeiboCrawler(AbstractCrawler):
                 headless=headless,
             )
 
-            # 显示浏览器信息
+            # Display browser information
             browser_info = await self.cdp_manager.get_browser_info()
-            utils.logger.info(f"[WeiboCrawler] CDP浏览器信息: {browser_info}")
+            utils.logger.info(f"[WeiboCrawler] CDP browser info: {browser_info}")
 
             return browser_context
 
         except Exception as e:
-            utils.logger.error(f"[WeiboCrawler] CDP模式启动失败，回退到标准模式: {e}")
-            # 回退到标准模式
+            utils.logger.error(f"[WeiboCrawler] CDP mode startup failed, falling back to standard mode: {e}")
+            # Fallback to standard mode
             chromium = playwright.chromium
             return await self.launch_browser(chromium, playwright_proxy, user_agent, headless)
 
+    async def get_note_full_text(self, note_item: Dict) -> Dict:
+        """
+        Get full text content of a post
+        If the post content is truncated (isLongText=True), request the detail API to get complete content
+        :param note_item: Post data, contains mblog field
+        :return: Updated post data
+        """
+        if not config.ENABLE_WEIBO_FULL_TEXT:
+            return note_item
+
+        mblog = note_item.get("mblog", {})
+        if not mblog:
+            return note_item
+
+        # Check if it's a long text
+        is_long_text = mblog.get("isLongText", False)
+        if not is_long_text:
+            return note_item
+
+        note_id = mblog.get("id")
+        if not note_id:
+            return note_item
+
+        try:
+            utils.logger.info(f"[WeiboCrawler.get_note_full_text] Fetching full text for note: {note_id}")
+            full_note = await self.wb_client.get_note_info_by_id(note_id)
+            if full_note and full_note.get("mblog"):
+                # Replace original content with complete content
+                note_item["mblog"] = full_note["mblog"]
+                utils.logger.info(f"[WeiboCrawler.get_note_full_text] Successfully fetched full text for note: {note_id}")
+
+            # Sleep after request to avoid rate limiting
+            await asyncio.sleep(config.CRAWLER_MAX_SLEEP_SEC)
+        except DataFetchError as ex:
+            utils.logger.error(f"[WeiboCrawler.get_note_full_text] Failed to fetch full text for note {note_id}: {ex}")
+        except Exception as ex:
+            utils.logger.error(f"[WeiboCrawler.get_note_full_text] Unexpected error for note {note_id}: {ex}")
+
+        return note_item
+
+    async def batch_get_notes_full_text(self, note_list: List[Dict]) -> List[Dict]:
+        """
+        Batch get full text content of posts
+        :param note_list: List of posts
+        :return: Updated list of posts
+        """
+        if not config.ENABLE_WEIBO_FULL_TEXT:
+            return note_list
+
+        result = []
+        for note_item in note_list:
+            updated_note = await self.get_note_full_text(note_item)
+            result.append(updated_note)
+        return result
+
     async def close(self):
         """Close browser context"""
-        # 如果使用CDP模式，需要特殊处理
+        # Special handling if using CDP mode
         if self.cdp_manager:
             await self.cdp_manager.cleanup()
             self.cdp_manager = None
