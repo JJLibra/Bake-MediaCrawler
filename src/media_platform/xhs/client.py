@@ -24,7 +24,7 @@ from urllib.parse import urlencode
 
 import httpx
 from playwright.async_api import BrowserContext, Page
-from tenacity import retry, stop_after_attempt, wait_fixed
+from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_not_exception_type
 
 import config
 from base.base_crawler import AbstractApiClient
@@ -34,7 +34,7 @@ from tools import utils
 if TYPE_CHECKING:
     from proxy.proxy_ip_pool import ProxyIpPool
 
-from .exception import DataFetchError, IPBlockError
+from .exception import DataFetchError, IPBlockError, NoteNotFoundError
 from .field import SearchNoteType, SearchSortType
 from .help import get_search_id
 from .extractor import XiaoHongShuExtractor
@@ -60,6 +60,7 @@ class XiaoHongShuClient(AbstractApiClient, ProxyRefreshMixin):
         self._domain = "https://www.xiaohongshu.com"
         self.IP_ERROR_STR = "Network connection error, please check network settings or restart"
         self.IP_ERROR_CODE = 300012
+        self.NOTE_NOT_FOUND_CODE = -510000
         self.NOTE_ABNORMAL_STR = "Note status abnormal, please check later"
         self.NOTE_ABNORMAL_CODE = -510001
         self.playwright_page = playwright_page
@@ -109,7 +110,7 @@ class XiaoHongShuClient(AbstractApiClient, ProxyRefreshMixin):
         self.headers.update(headers)
         return self.headers
 
-    @retry(stop=stop_after_attempt(3), wait=wait_fixed(1))
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(1), retry=retry_if_not_exception_type(NoteNotFoundError))
     async def request(self, method, url, **kwargs) -> Union[str, Any]:
         """
         Wrapper for httpx common request method, processes request response
@@ -144,6 +145,8 @@ class XiaoHongShuClient(AbstractApiClient, ProxyRefreshMixin):
             return data.get("data", data.get("success", {}))
         elif data["code"] == self.IP_ERROR_CODE:
             raise IPBlockError(self.IP_ERROR_STR)
+        elif data["code"] in (self.NOTE_NOT_FOUND_CODE, self.NOTE_ABNORMAL_CODE):
+            raise NoteNotFoundError(f"Note not found or abnormal, code: {data['code']}")
         else:
             err_msg = data.get("msg", None) or f"{response.text}"
             raise DataFetchError(err_msg)
@@ -208,24 +211,38 @@ class XiaoHongShuClient(AbstractApiClient, ProxyRefreshMixin):
                 )  # Keep original exception type name for developer debugging
                 return None
 
+    async def query_self(self) -> Optional[Dict]:
+        """
+        Query self user info to check login state
+        Returns:
+            Dict: User info if logged in, None otherwise
+        """
+        uri = "/api/sns/web/v1/user/selfinfo"
+        headers = await self._pre_headers(uri, params={})
+        async with httpx.AsyncClient(proxy=self.proxy) as client:
+            response = await client.get(f"{self._host}{uri}", headers=headers)
+            if response.status_code == 200:
+                return response.json()
+        return None
+
     async def pong(self) -> bool:
         """
-        Check if login state is still valid
+        Check if login state is still valid by querying self user info
         Returns:
-
+            bool: True if logged in, False otherwise
         """
-        """get a note to check if login state is ok"""
-        utils.logger.info("[XiaoHongShuClient.pong] Begin to pong xhs...")
+        utils.logger.info("[XiaoHongShuClient.pong] Begin to check login state...")
         ping_flag = False
         try:
-            note_card: Dict = await self.get_note_by_keyword(keyword="Xiaohongshu")
-            if note_card.get("items"):
+            self_info: Dict = await self.query_self()
+            if self_info and self_info.get("data", {}).get("result", {}).get("success"):
                 ping_flag = True
         except Exception as e:
             utils.logger.error(
-                f"[XiaoHongShuClient.pong] Ping xhs failed: {e}, and try to login again..."
+                f"[XiaoHongShuClient.pong] Check login state failed: {e}, and try to login again..."
             )
             ping_flag = False
+        utils.logger.info(f"[XiaoHongShuClient.pong] Login state result: {ping_flag}")
         return ping_flag
 
     async def update_cookies(self, browser_context: BrowserContext):
