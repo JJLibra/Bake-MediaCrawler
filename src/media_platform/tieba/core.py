@@ -213,7 +213,7 @@ class TieBaCrawler(AbstractCrawler):
         Returns:
 
         """
-        tieba_limit_count = 50
+        tieba_limit_count = 30
         if config.CRAWLER_MAX_NOTES_COUNT < tieba_limit_count:
             config.CRAWLER_MAX_NOTES_COUNT = tieba_limit_count
         for tieba_name in config.TIEBA_NAME_LIST:
@@ -245,7 +245,7 @@ class TieBaCrawler(AbstractCrawler):
                 page_number += tieba_limit_count
 
     async def get_specified_notes(
-        self, note_id_list: List[str] = config.TIEBA_SPECIFIED_ID_LIST
+        self, note_id_list: Optional[List[str]] = None
     ):
         """
         Get the information and comments of the specified post
@@ -255,6 +255,8 @@ class TieBaCrawler(AbstractCrawler):
         Returns:
 
         """
+        if note_id_list is None:
+            note_id_list = config.TIEBA_SPECIFIED_ID_LIST
         semaphore = asyncio.Semaphore(config.MAX_CONCURRENCY_NUM)
         task_list = [
             self.get_note_detail_async_task(note_id=note_id, semaphore=semaphore)
@@ -365,18 +367,15 @@ class TieBaCrawler(AbstractCrawler):
 
         """
         utils.logger.info(
-            "[WeiboCrawler.get_creators_and_notes] Begin get weibo creators"
+            "[TieBaCrawler.get_creators_and_notes] Begin get tieba creators"
         )
         for creator_url in config.TIEBA_CREATOR_URL_LIST:
-            creator_page_html_content = await self.tieba_client.get_creator_info_by_url(
+            creator_info: TiebaCreator = await self.tieba_client.get_creator_info_by_url(
                 creator_url=creator_url
-            )
-            creator_info: TiebaCreator = self._page_extractor.extract_creator_info(
-                creator_page_html_content
             )
             if creator_info:
                 utils.logger.info(
-                    f"[WeiboCrawler.get_creators_and_notes] creator info: {creator_info}"
+                    f"[TieBaCrawler.get_creators_and_notes] creator info: {creator_info}"
                 )
                 if not creator_info:
                     raise Exception("Get creator info error")
@@ -385,12 +384,11 @@ class TieBaCrawler(AbstractCrawler):
 
                 # Get all note information of the creator
                 all_notes_list = (
-                    await self.tieba_client.get_all_notes_by_creator_user_name(
-                        user_name=creator_info.user_name,
+                    await self.tieba_client.get_all_notes_by_creator_url(
+                        creator_url=creator_url,
                         crawl_interval=0,
                         callback=tieba_store.batch_update_tieba_notes,
                         max_note_count=config.CRAWLER_MAX_NOTES_COUNT,
-                        creator_page_html_content=creator_page_html_content,
                     )
                 )
 
@@ -398,7 +396,7 @@ class TieBaCrawler(AbstractCrawler):
 
             else:
                 utils.logger.error(
-                    f"[WeiboCrawler.get_creators_and_notes] get creator info error, creator_url:{creator_url}"
+                    f"[TieBaCrawler.get_creators_and_notes] get creator info error, creator_url:{creator_url}"
                 )
 
     async def _navigate_to_tieba_via_baidu(self):
