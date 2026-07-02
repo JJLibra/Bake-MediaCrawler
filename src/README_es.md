@@ -2,6 +2,24 @@
 
 <div align="center">
 
+### 🤝 Agradecimientos Especiales a Nuestro Patrocinador Platino
+
+<a href="https://www.browseract.com/?co-from=mediacrawler&redirect=https://github.com/browser-act/skills/tree/main" target="_blank">
+  <img src="docs/static/images/browseract.png" alt="BrowserAct" width="400">
+</a>
+
+<br>
+
+<a href="https://www.browseract.com/?co-from=mediacrawler&redirect=https://github.com/browser-act/skills/tree/main" target="_blank">
+<small>BrowserAct es una herramienta de automatización de navegador diseñada para Agentes de IA, con manejo de intercepciones anti-bot, transferencia humana cuando las tareas se atascan, aislamiento paralelo de múltiples tareas y gestión independiente de múltiples cuentas, ayudando a los Agentes a completar tareas web reales de manera más estable.</small>
+</a>
+
+</div>
+
+---
+
+<div align="center">
+
 <a href="https://trendshift.io/repositories/8291" target="_blank">
   <img src="https://trendshift.io/api/badge/repositories/8291" alt="NanmiCoder%2FMediaCrawler | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/>
 </a>
@@ -139,14 +157,38 @@ uv run main.py --help
 
 MediaCrawler proporciona una interfaz de operación visual basada en web, permitiéndole usar fácilmente las funciones del rastreador sin línea de comandos.
 
-#### Iniciar Servicio WebUI
+#### Desarrollo (recomendado)
+
+Para el desarrollo, debe iniciar tanto el servicio API backend como el servidor de desarrollo Vite frontend:
 
 ```shell
-# Iniciar servidor API (puerto predeterminado 8080)
+# Terminal 1: iniciar servidor API (puerto predeterminado 8080)
 uv run uvicorn api.main:app --port 8080 --reload
 
-# O iniciar usando método de módulo
-uv run python -m api.main
+# Terminal 2: iniciar servidor de desarrollo frontend
+cd webui
+npm install
+npm run dev        # se inicia en el puerto 5173 por defecto y redirige /api a 8080
+```
+
+Después de iniciar exitosamente, visite `http://localhost:5173/` para abrir la interfaz WebUI.
+
+> En el primer inicio, se realiza una verificación de entorno (llama a `/api/env/check`), así que asegúrese de que el servicio backend esté en ejecución. Si la verificación falla, puede hacer clic en "Omitir verificación" para omitirla temporalmente.
+
+#### Construir para Producción
+
+Si desea que el servidor API sirva directamente los recursos estáticos de WebUI, construya el frontend primero:
+
+```shell
+cd webui
+npm install
+npm run build      # salida en api/webui/
+```
+
+Luego inicie solo el servidor API:
+
+```shell
+uv run uvicorn api.main:app --port 8080 --reload
 ```
 
 Después de iniciar exitosamente, visite `http://localhost:8080` para abrir la interfaz WebUI.

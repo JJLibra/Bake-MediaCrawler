@@ -2,6 +2,24 @@
 
 <div align="center">
 
+### 🤝 Special Thanks to Our Platinum Sponsor
+
+<a href="https://www.browseract.com/?co-from=mediacrawler&redirect=https://github.com/browser-act/skills/tree/main" target="_blank">
+  <img src="docs/static/images/browseract.png" alt="BrowserAct" width="400">
+</a>
+
+<br>
+
+<a href="https://www.browseract.com/?co-from=mediacrawler&redirect=https://github.com/browser-act/skills/tree/main" target="_blank">
+<small>BrowserAct is a browser automation tool designed for AI Agents, featuring anti-bot interception handling, human handoff when tasks get stuck, multi-task parallel isolation, and multi-account independent management, helping Agents complete real-world web tasks more reliably.</small>
+</a>
+
+</div>
+
+---
+
+<div align="center">
+
 <a href="https://trendshift.io/repositories/8291" target="_blank">
   <img src="https://trendshift.io/api/badge/repositories/8291" alt="NanmiCoder%2FMediaCrawler | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/>
 </a>
@@ -139,14 +157,38 @@ uv run main.py --help
 
 MediaCrawler provides a web-based visual operation interface, allowing you to easily use crawler features without command line.
 
-#### Start WebUI Service
+#### Development (recommended)
+
+For development, you need to start both the backend API service and the frontend Vite dev server:
 
 ```shell
-# Start API server (default port 8080)
+# Terminal 1: start API server (default port 8080)
 uv run uvicorn api.main:app --port 8080 --reload
 
-# Or start using module method
-uv run python -m api.main
+# Terminal 2: start frontend dev server
+cd webui
+npm install
+npm run dev        # starts on port 5173 by default and proxies /api to 8080
+```
+
+After successful startup, visit `http://localhost:5173/` to open the WebUI interface.
+
+> On first launch, an environment check is performed (calls `/api/env/check`), so make sure the backend service is running. If the check fails, you can click "Skip Check" to bypass it temporarily.
+
+#### Build for Production
+
+If you want the API server to serve the WebUI static assets directly, build the frontend first:
+
+```shell
+cd webui
+npm install
+npm run build      # outputs to api/webui/
+```
+
+Then start only the API server:
+
+```shell
+uv run uvicorn api.main:app --port 8080 --reload
 ```
 
 After successful startup, visit `http://localhost:8080` to open the WebUI interface.

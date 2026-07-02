@@ -30,6 +30,7 @@ from constant import zhihu as zhihu_constant
 from model.m_zhihu import ZhihuComment, ZhihuContent, ZhihuCreator
 from tools import utils
 from tools.crawler_util import extract_text_from_html
+from tools.user_hash import anonymize_user_id, mask_nickname
 
 ZHIHU_SGIN_JS = None
 
@@ -106,10 +107,10 @@ class ZhihuExtractor:
         Returns:
         """
         res = ZhihuContent()
-        res.content_id = answer.get("id")
+        res.content_id = str(answer.get("id") or "")
         res.content_type = answer.get("type")
         res.content_text = extract_text_from_html(answer.get("content", ""))
-        res.question_id = answer.get("question").get("id")
+        res.question_id = str(answer.get("question", {}).get("id") or "")
         res.content_url = f"{zhihu_constant.ZHIHU_URL}/question/{res.question_id}/answer/{res.content_id}"
         res.title = extract_text_from_html(answer.get("title", ""))
         res.desc = extract_text_from_html(answer.get("description", "") or answer.get("excerpt", ""))
@@ -120,11 +121,8 @@ class ZhihuExtractor:
 
         # extract author info
         author_info = self._extract_content_or_comment_author(answer.get("author"))
-        res.user_id = author_info.user_id
-        res.user_link = author_info.user_link
+        res.creator_hash = author_info.creator_hash
         res.user_nickname = author_info.user_nickname
-        res.user_avatar = author_info.user_avatar
-        res.user_url_token = author_info.url_token
         return res
 
     def _extract_article_content(self, article: Dict) -> ZhihuContent:
@@ -137,7 +135,7 @@ class ZhihuExtractor:
 
         """
         res = ZhihuContent()
-        res.content_id = article.get("id")
+        res.content_id = str(article.get("id") or "")
         res.content_type = article.get("type")
         res.content_text = extract_text_from_html(article.get("content"))
         res.content_url = f"{zhihu_constant.ZHIHU_ZHUANLAN_URL}/p/{res.content_id}"
@@ -150,11 +148,8 @@ class ZhihuExtractor:
 
         # extract author info
         author_info = self._extract_content_or_comment_author(article.get("author"))
-        res.user_id = author_info.user_id
-        res.user_link = author_info.user_link
+        res.creator_hash = author_info.creator_hash
         res.user_nickname = author_info.user_nickname
-        res.user_avatar = author_info.user_avatar
-        res.user_url_token = author_info.url_token
         return res
 
     def _extract_zvideo_content(self, zvideo: Dict) -> ZhihuContent:
@@ -167,6 +162,8 @@ class ZhihuExtractor:
 
         """
         res = ZhihuContent()
+        res.content_id = str(zvideo.get("id") or "")
+        res.content_type = zvideo.get("type")
 
         if "video" in zvideo and isinstance(zvideo.get("video"), dict): # This indicates data from the creator's homepage video list API
             res.content_url = f"{zhihu_constant.ZHIHU_URL}/zvideo/{res.content_id}"
@@ -175,8 +172,6 @@ class ZhihuExtractor:
         else:
             res.content_url = zvideo.get("video_url")
             res.created_time = zvideo.get("created_at")
-        res.content_id = zvideo.get("id")
-        res.content_type = zvideo.get("type")
         res.title = extract_text_from_html(zvideo.get("title"))
         res.desc = extract_text_from_html(zvideo.get("description"))
         res.voteup_count = zvideo.get("voteup_count")
@@ -184,11 +179,8 @@ class ZhihuExtractor:
 
         # extract author info
         author_info = self._extract_content_or_comment_author(zvideo.get("author"))
-        res.user_id = author_info.user_id
-        res.user_link = author_info.user_link
+        res.creator_hash = author_info.creator_hash
         res.user_nickname = author_info.user_nickname
-        res.user_avatar = author_info.user_avatar
-        res.user_url_token = author_info.url_token
         return res
 
     @staticmethod
@@ -207,11 +199,8 @@ class ZhihuExtractor:
                 return res
             if not author.get("id"):
                 author = author.get("member")
-            res.user_id = author.get("id")
-            res.user_link = f"{zhihu_constant.ZHIHU_URL}/people/{author.get('url_token')}"
-            res.user_nickname = author.get("name")
-            res.user_avatar = author.get("avatar_url")
-            res.url_token = author.get("url_token")
+            res.creator_hash = anonymize_user_id(author.get("id"))
+            res.user_nickname = mask_nickname(author.get("name"))
 
         except Exception as e :
             utils.logger.warning(
@@ -253,7 +242,6 @@ class ZhihuExtractor:
         res.parent_comment_id = comment.get("reply_comment_id")
         res.content = extract_text_from_html(comment.get("content"))
         res.publish_time = comment.get("created_time")
-        res.ip_location = self._extract_comment_ip_location(comment.get("comment_tag", []))
         res.sub_comment_count = comment.get("child_comment_count")
         res.like_count = comment.get("like_count") if comment.get("like_count") else 0
         res.dislike_count = comment.get("dislike_count") if comment.get("dislike_count") else 0
@@ -262,10 +250,8 @@ class ZhihuExtractor:
 
         # extract author info
         author_info = self._extract_content_or_comment_author(comment.get("author"))
-        res.user_id = author_info.user_id
-        res.user_link = author_info.user_link
+        res.creator_hash = author_info.creator_hash
         res.user_nickname = author_info.user_nickname
-        res.user_avatar = author_info.user_avatar
         return res
 
     @staticmethod
@@ -352,13 +338,8 @@ class ZhihuExtractor:
             return None
 
         res = ZhihuCreator()
-        res.user_id = creator_info.get("id")
-        res.user_link = f"{zhihu_constant.ZHIHU_URL}/people/{user_url_token}"
-        res.user_nickname = creator_info.get("name")
-        res.user_avatar = creator_info.get("avatarUrl")
-        res.url_token = creator_info.get("urlToken") or user_url_token
-        res.gender = self._foramt_gender_text(creator_info.get("gender"))
-        res.ip_location = creator_info.get("ipInfo")
+        res.creator_hash = anonymize_user_id(creator_info.get("id"))
+        res.user_nickname = mask_nickname(creator_info.get("name"))
         res.follows = creator_info.get("followingCount")
         res.fans = creator_info.get("followerCount")
         res.anwser_count = creator_info.get("answerCount")
