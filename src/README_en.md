@@ -278,20 +278,40 @@ MediaCrawler supports multiple data storage methods, including CSV, JSON, JSONL,
 
 ### 💰 Sponsor Display
 
-<a href="https://tikhub.io/?utm_source=github.com/NanmiCoder/MediaCrawler&utm_medium=marketing_social&utm_campaign=retargeting&utm_content=carousel_ad">
-<img width="500" src="docs/static/images/tikhub_banner_zh.png">
-<br>
-TikHub.io provides 900+ highly stable data interfaces, covering 14+ mainstream domestic and international platforms including TK, DY, XHS, Y2B, Ins, X, etc. Supports multi-dimensional public data APIs for users, content, products, comments, etc., with 40M+ cleaned structured datasets. Use invitation code <code>cfzyejV9</code> to register and recharge, and get an additional $2 bonus.
-</a>
-<br>
-<br>
-
-<a href="https://www.atlascloud.ai/?utm_source=github&utm_medium=link&utm_campaign=mei%27da%27c%27rmeidacrawler">
-<img width="500" alt="Atlas Cloud" src="docs/static/images/atlas_cloud_logo_black.png#gh-light-mode-only">
-<img width="500" alt="Atlas Cloud" src="docs/static/images/atlas_cloud_logo_white.png#gh-dark-mode-only">
-</a>
-<br>
-<a href="https://www.atlascloud.ai/?utm_source=github&utm_medium=link&utm_campaign=mei%27da%27c%27rmeidacrawler">Atlas Cloud</a> is a full-modal AI inference platform that gives developers a single AI API to access video generation, image generation, and LLM APIs. Instead of managing multiple vendor integrations, you connect once and get unified access to 300+ curated models across all modalities. Check out Atlas Cloud's new <a href="https://www.atlascloud.ai/console/coding-plan">coding plan promotion</a> for more budget-friendly API access.
+<table>
+  <thead>
+    <tr>
+      <th width="220">Sponsor</th>
+      <th align="left">Introduction</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://tikhub.io/?utm_source=github.com/NanmiCoder/MediaCrawler&utm_medium=marketing_social&utm_campaign=retargeting&utm_content=carousel_ad"><img src="docs/static/images/tikhub_banner_zh.png" width="180" alt="TikHub"></a>
+      </td>
+      <td valign="middle">
+        <a href="https://tikhub.io/?utm_source=github.com/NanmiCoder/MediaCrawler&utm_medium=marketing_social&utm_campaign=retargeting&utm_content=carousel_ad">TikHub.io</a> provides 900+ highly stable data interfaces, covering 14+ mainstream domestic and international platforms including TK, DY, XHS, Y2B, Ins, X, etc. Supports multi-dimensional public data APIs for users, content, products, comments, etc., with 40M+ cleaned structured datasets. Use invitation code <code>cfzyejV9</code> to <a href="https://tikhub.io/?utm_source=github.com/NanmiCoder/MediaCrawler&utm_medium=marketing_social&utm_campaign=retargeting&utm_content=carousel_ad">register and recharge</a>, and get an additional $2 bonus.
+      </td>
+    </tr>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://www.atlascloud.ai/?utm_source=github&utm_medium=link&utm_campaign=mei%27da%27c%27rmeidacrawler"><img width="160" alt="Atlas Cloud" src="docs/static/images/atlas_cloud_logo_black.png#gh-light-mode-only"><img width="160" alt="Atlas Cloud" src="docs/static/images/atlas_cloud_logo_white.png#gh-dark-mode-only"></a>
+      </td>
+      <td valign="middle">
+        <a href="https://www.atlascloud.ai/?utm_source=github&utm_medium=link&utm_campaign=mei%27da%27c%27rmeidacrawler">Atlas Cloud</a> is a full-modal AI inference platform that gives developers a single AI API to access video generation, image generation, and LLM APIs. Instead of managing multiple vendor integrations, you connect once and get unified access to 300+ curated models across all modalities. Check out Atlas Cloud's new <a href="https://www.atlascloud.ai/console/coding-plan">coding plan promotion</a> for more budget-friendly API access.
+      </td>
+    </tr>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://bloome.im/login?ref=NanmiCoder"><img src="https://bloome.im/icon-512.png" width="72" alt="Bloome"><br><strong>Bloome</strong></a>
+      </td>
+      <td valign="middle">
+        <a href="https://bloome.im/login?ref=NanmiCoder">Bloome</a> is an AI Agent IM platform — multiple AI agents (Claude, ChatGPT, DeepSeek, etc.) collaborate with you in a single conversation like team members, automatically dividing up the work and cross-checking each other, and directly producing tables, documents, and visual dashboards. Zero config, runs in the cloud, works on both web and mobile, and you can share your configured agents with your team in one click. 👉 <a href="https://bloome.im/login?ref=NanmiCoder">Try Bloome</a>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 ---
 
