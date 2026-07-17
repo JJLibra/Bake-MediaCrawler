@@ -296,10 +296,10 @@ MediaCrawler soporta múltiples métodos de almacenamiento de datos, incluyendo 
     </tr>
     <tr>
       <td align="center" valign="middle">
-        <a href="https://bloome.im/login?ref=NanmiCoder"><img src="docs/static/images/bloome_logo.png" width="180" alt="Bloome"></a>
+        <a href="https://bloome.im/app?ref=NanmiCoder&utm_medium=github&utm_source=NanmiCoder-MediaCrawler-ivor-202607"><img src="docs/static/images/bloome_logo.png" width="180" alt="Bloome"></a>
       </td>
       <td valign="middle">
-        <a href="https://bloome.im/login?ref=NanmiCoder">Bloome</a> es una plataforma de IM de agentes de IA: varios agentes de IA (Claude, ChatGPT, DeepSeek, etc.) colaboran contigo en una misma conversación como miembros de un equipo, dividiéndose el trabajo automáticamente y revisándose entre sí, y generando directamente tablas, documentos y paneles visuales. Sin configuración, funciona en la nube, disponible tanto en web como en móvil, y puedes compartir tus agentes configurados con tu equipo con un solo clic. 👉 <a href="https://bloome.im/login?ref=NanmiCoder">Prueba Bloome</a>
+        <a href="https://bloome.im/app?ref=NanmiCoder&utm_medium=github&utm_source=NanmiCoder-MediaCrawler-ivor-202607">Bloome</a> es una plataforma de IM de agentes de IA: varios agentes de IA (Claude, ChatGPT, DeepSeek, etc.) colaboran contigo en una misma conversación como miembros de un equipo, dividiéndose el trabajo automáticamente y revisándose entre sí, y generando directamente tablas, documentos y paneles visuales. Sin configuración, funciona en la nube, disponible tanto en web como en móvil, y puedes compartir tus agentes configurados con tu equipo con un solo clic. 👉 <a href="https://bloome.im/app?ref=NanmiCoder&utm_medium=github&utm_source=NanmiCoder-MediaCrawler-ivor-202607">Prueba Bloome</a>
       </td>
     </tr>
     <tr>
