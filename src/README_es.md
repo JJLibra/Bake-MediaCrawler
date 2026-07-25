@@ -4,14 +4,14 @@
 
 ### 🤝 Agradecimientos Especiales a Nuestro Patrocinador Platino
 
-<a href="https://www.browseract.com/?co-from=mediacrawler&redirect=https://github.com/browser-act/skills/tree/main" target="_blank">
-  <img src="docs/static/images/browseract.png" alt="BrowserAct" width="400">
+<a href="https://www.browseract.ai/mediacrawler" target="_blank">
+  <img src="docs/static/images/browseract_ad.jpg" alt="BrowserAct" width="600">
 </a>
 
 <br>
 
-<a href="https://www.browseract.com/?co-from=mediacrawler&redirect=https://github.com/browser-act/skills/tree/main" target="_blank">
-<small>BrowserAct es una herramienta de automatización de navegador diseñada para Agentes de IA, con manejo de intercepciones anti-bot, transferencia humana cuando las tareas se atascan, aislamiento paralelo de múltiples tareas y gestión independiente de múltiples cuentas, ayudando a los Agentes a completar tareas web reales de manera más estable.</small>
+<a href="https://www.browseract.ai/mediacrawler" target="_blank">
+<small>BrowserAct permite extraer datos de cualquier sitio web. Solo describe los datos que necesitas y BrowserAct explorará y probará las páginas web en un navegador real, generando Bots de recolección de datos confiables y reutilizables que devuelven resultados estructurados. Incluye navegación sigilosa y manejo de captchas integrados, además de proxies residenciales de alta calidad. Sin necesidad de código, pruébalo gratis ahora.</small>
 </a>
 
 </div>
