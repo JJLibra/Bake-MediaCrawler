@@ -35,6 +35,7 @@ from playwright.async_api import (
 
 import config
 from base.base_crawler import AbstractCrawler
+from media_downloader import MediaDownloader
 from model.m_kuaishou import VideoUrlInfo, CreatorUrlInfo
 from proxy.proxy_ip_pool import IpInfoModel, create_ip_pool
 from store import kuaishou as kuaishou_store
@@ -42,6 +43,7 @@ from tools import utils
 from tools.cdp_browser import CDPBrowserManager
 from var import comment_tasks_var, crawler_type_var, source_keyword_var
 
+from . import media as kuaishou_media
 from .client import KuaiShouClient
 from .exception import DataFetchError
 from .help import (
@@ -64,6 +66,7 @@ class KuaishouCrawler(AbstractCrawler):
         self.user_agent = utils.get_user_agent()
         self.cdp_manager = None
         self.ip_proxy_pool = None  # Proxy IP pool, used for automatic proxy refresh
+        self._media_downloader: Optional[MediaDownloader] = None
 
     async def start(self):
         playwright_proxy_format, httpx_proxy_format = None, None
@@ -177,6 +180,7 @@ class KuaishouCrawler(AbstractCrawler):
                 for video_detail in videos_res.get("feeds", []):
                     video_id_list.append(video_detail.get("photo", {}).get("id"))
                     await kuaishou_store.update_kuaishou_video(video_item=video_detail)
+                    await self.download_media(video_item=video_detail)
 
                 utils.logger.info(
                     f"[KuaishouCrawler.search] keyword: {keyword}, page: {page}, got {len(video_id_list)} videos"
@@ -200,6 +204,24 @@ class KuaishouCrawler(AbstractCrawler):
         for video_url in config.KS_SPECIFIED_ID_LIST:
             try:
                 video_info = parse_video_info_from_url(video_url)
+
+                # 分享短链（/f/xxx）要先跟随 302 重定向，才能拿到 /short-video/<id>
+                if video_info.url_type == "short":
+                    utils.logger.info(
+                        f"[KuaishouCrawler.get_specified_videos] Resolving short link: {video_url}"
+                    )
+                    resolved_url = await self.ks_client.resolve_short_url(video_url)
+                    if resolved_url:
+                        video_info = parse_video_info_from_url(resolved_url)
+                        utils.logger.info(
+                            f"[KuaishouCrawler.get_specified_videos] Short link resolved to video ID: {video_info.video_id}"
+                        )
+                    else:
+                        utils.logger.error(
+                            f"[KuaishouCrawler.get_specified_videos] Failed to resolve short link: {video_url}"
+                        )
+                        continue
+
                 video_ids.append(video_info.video_id)
                 utils.logger.info(f"Parsed video ID: {video_info.video_id} from {video_url}")
             except ValueError as e:
@@ -215,6 +237,7 @@ class KuaishouCrawler(AbstractCrawler):
         for video_detail in video_details:
             if video_detail is not None:
                 await kuaishou_store.update_kuaishou_video(video_detail)
+                await self.download_media(video_item=video_detail)
         await self.batch_get_video_comments(video_ids)
 
     async def get_video_info_task(
@@ -232,15 +255,29 @@ class KuaishouCrawler(AbstractCrawler):
                 utils.logger.info(f"[KuaishouCrawler.get_video_info_task] Sleeping for {sleep_sec:.1f} seconds after fetching video details {video_id}")
 
                 detail = result.get("visionVideoDetail")
-                if detail:
-                    photo = detail.get("photo", {})
-                    author = detail.get("author", {})
-                    utils.logger.info(
-                        f"[KuaishouCrawler.get_video_info_task] video detail: "
-                        f"id={photo.get('id', video_id)} author={author.get('name', '')} "
-                        f"likes={photo.get('likeCount', '')} views={photo.get('viewCount', '')} "
-                        f"caption={str(photo.get('caption', ''))[:50]}"
+                if not detail:
+                    return None
+
+                # 快手对不可用视频（已删除/私密/不存在）返回的是
+                # visionVideoDetail: {photo: null, author: null}——key 在、值是 null。
+                # 注意 .get("photo", {}) 只在 key **缺失** 时给默认值，key 存在且为 null
+                # 时拿到的仍是 None，接着 .get() 就抛 AttributeError，而
+                # asyncio.gather 不会拦住它，整轮爬取会直接带崩。
+                photo = detail.get("photo") or {}
+                if not photo:
+                    utils.logger.warning(
+                        f"[KuaishouCrawler.get_video_info_task] 视频不可用"
+                        f"（photo 为空，可能已删除或私密），跳过 video_id={video_id}"
                     )
+                    return None
+
+                author = detail.get("author") or {}
+                utils.logger.info(
+                    f"[KuaishouCrawler.get_video_info_task] video detail: "
+                    f"id={photo.get('id', video_id)} author={author.get('name', '')} "
+                    f"likes={photo.get('likeCount', '')} views={photo.get('viewCount', '')} "
+                    f"caption={str(photo.get('caption', ''))[:50]}"
+                )
                 return detail
             except DataFetchError as ex:
                 utils.logger.error(
@@ -464,6 +501,49 @@ class KuaishouCrawler(AbstractCrawler):
         for video_detail in video_details:
             if video_detail is not None:
                 await kuaishou_store.update_kuaishou_video(video_detail)
+                await self.download_media(video_item=video_detail)
+
+    async def download_media(self, video_item: Dict):
+        """下载快手作品的媒体资源（封面 + 视频）
+
+        Args:
+            video_item (Dict): 快手作品详情（结构为 {"photo": {...}, "author": {...}}）
+        """
+        if not config.ENABLE_GET_MEDIA:
+            return
+        try:
+            items = kuaishou_media.build_media_items(video_item)
+            if items:
+                await self._get_media_downloader().download_all(items)
+        except Exception as exc:
+            # 媒体下载是旁路能力，解析异常/网络异常都不能中断爬取主流程
+            utils.logger.error(f"[KuaishouCrawler.download_media] 媒体下载异常: {exc}")
+
+    def _get_media_downloader(self) -> MediaDownloader:
+        """惰性创建媒体下载器，并同步最新的代理与 UA（代理池是就地刷新的）"""
+        if self._media_downloader is None:
+            self._media_downloader = MediaDownloader(
+                platform="ks",
+                proxy=getattr(self.ks_client, "proxy", None),
+                extra_headers=self._media_headers(),
+            )
+        else:
+            self._media_downloader.update_credentials(
+                proxy=getattr(self.ks_client, "proxy", None),
+                extra_headers=self._media_headers(),
+            )
+        return self._media_downloader
+
+    def _media_headers(self) -> Dict:
+        """媒体请求头：平台 Referer（防盗链）+ UA。
+
+        client.headers 里含 Cookie，不能整体透传到 CDN 请求上，因此只取 UA。
+        """
+        headers = {"Referer": "https://www.kuaishou.com/"}
+        client_headers = getattr(self.ks_client, "headers", {}) or {}
+        if client_headers.get("User-Agent"):
+            headers["User-Agent"] = client_headers["User-Agent"]
+        return headers
 
     async def close(self):
         """Close browser context"""

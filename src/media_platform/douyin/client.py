@@ -214,7 +214,19 @@ class DouYinClient(AbstractApiClient, ProxyRefreshMixin):
         :param aweme_id:
         :return:
         """
-        params = {"aweme_id": aweme_id}
+        # 抖音 detail 接口的 Argus 风控要求这两个参数成套出现，缺一则直接 403
+        # （响应体为 "Blocked by ArgusSecurityPlugin Uifid Not Found"）：
+        #   uifid         = UIFID cookie，没有时退到 UIFID_TEMP
+        #   verifyFp / fp = s_v_web_id cookie
+        # 必须用 cookie 里的 s_v_web_id：实测 uifid 搭配自生成的 verifyFp 会被判成
+        # "Signature Not Found"，两者同源才能通过。
+        s_v_web_id = self.cookie_dict.get("s_v_web_id", "")
+        params = {
+            "aweme_id": aweme_id,
+            "uifid": self.cookie_dict.get("UIFID") or self.cookie_dict.get("UIFID_TEMP", ""),
+            "verifyFp": s_v_web_id,
+            "fp": s_v_web_id,
+        }
         headers = copy.copy(self.headers)
         del headers["Origin"]
         res = await self.get("/aweme/v1/web/aweme/detail/", params, headers)
@@ -343,20 +355,6 @@ class DouYinClient(AbstractApiClient, ProxyRefreshMixin):
                 await callback(aweme_list)
             result.extend(aweme_list)
         return result
-
-    async def get_aweme_media(self, url: str) -> Union[bytes, None]:
-        async with make_async_client(proxy=self.proxy) as client:
-            try:
-                response = await client.request("GET", url, timeout=self.timeout, follow_redirects=True)
-                response.raise_for_status()
-                if not response.reason_phrase == "OK":
-                    utils.logger.error(f"[DouYinClient.get_aweme_media] request {url} err, res:{response.text}")
-                    return None
-                else:
-                    return response.content
-            except httpx.HTTPError as exc:  # some wrong when call httpx.request method, such as connection error, client error, server error or response status code is not 2xx
-                utils.logger.error(f"[DouYinClient.get_aweme_media] {exc.__class__.__name__} for {exc.request.url} - {exc}")  # Keep the original exception type name for developers to debug
-                return None
 
     async def resolve_short_url(self, short_url: str) -> str:
         """
