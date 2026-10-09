@@ -326,6 +326,14 @@ MediaCrawler supports multiple data storage methods, including CSV, JSON, JSONL,
         <a href="https://sx.org/c/CRAWLER3G">SX.ORG</a> is a high-performance proxy network built for heavy web scraping and anti-bot bypass, fully compatible with MediaCrawler. Key advantages include global dynamic residential IP coverage across 190+ locations, 99.9% network uptime, precise country/city/ASN targeting, native HTTP(S) &amp; SOCKS5 support, and flexible session rotation for social media platforms. MediaCrawler users can use exclusive promo code <code>CRAWLER3G</code> at signup to get <strong>3 GB</strong> of free trial traffic. 👉 <a href="https://sx.org/c/CRAWLER3G">Claim 3 GB on SX.ORG</a>
       </td>
     </tr>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://proxylane.dev/?utm_source=mediacrawler&utm_medium=partnership&utm_campaign=mediacrawler_sponsor_202610&utm_content=github_readme_en"><img src="docs/static/images/proxylane_banner.png" width="180" alt="ProxyLane"></a>
+      </td>
+      <td valign="middle">
+        <a href="https://proxylane.dev/?utm_source=mediacrawler&utm_medium=partnership&utm_campaign=mediacrawler_sponsor_202610&utm_content=github_readme_en">ProxyLane</a> provides residential IPs inside mainland China (China Telecom, Unicom, Mobile) for running MediaCrawler from servers outside China, with the exit pinned to Shanghai, Beijing, Guangzhou, Shenzhen or another city. Add <code>_c_CN_city_Shanghai</code> to your proxy username in static mode to get a Shanghai residential IP; see the <a href="docs/proxylane/README_en.md">3-step setup guide</a>. MediaCrawler users can sign up with code <code>MEDIACRAWLER3GB</code> to get <strong>3 GB</strong> of free traffic. 👉 <a href="https://proxylane.dev/redeem?code=MEDIACRAWLER3GB&utm_source=mediacrawler&utm_medium=partnership&utm_campaign=mediacrawler_sponsor_202610&utm_content=github_readme_en">Claim 3 GB free</a>
+      </td>
+    </tr>
   </tbody>
 </table>
 
@@ -342,8 +350,12 @@ Become a sponsor and showcase your product here, getting massive exposure daily!
 
 ### 📚 Other
 - **FAQ**: [MediaCrawler Complete Documentation](https://nanmicoder.github.io/MediaCrawler/)
+
+### 🧩 My Other Projects
 - **Crawler Beginner Tutorial**: [CrawlerTutorial Free Tutorial](https://github.com/NanmiCoder/CrawlerTutorial)
 - **News Crawler Open Source Project**: [NewsCrawlerCollection](https://github.com/NanmiCoder/NewsCrawlerCollection)
+- **Open Source Desktop Agent**: [cc-haha](https://github.com/NanmiCoder/cc-haha) — a local-first, cross-platform desktop workspace for agents, with multi-agent collaboration, Git worktrees, a skill marketplace, multi-model support and Computer Use, plus remote access via WeChat / Feishu / DingTalk and more
+- **DeepSeek Harness Plugin**: [dsh-agent-teams](https://github.com/NanmiCoder/dsh-agent-teams) — brings Agent Teams to DeepSeek Harness, so multiple agents can work in parallel on complex tasks
 
 
 ## ⭐ Star Trend Chart
