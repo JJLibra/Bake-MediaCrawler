@@ -66,7 +66,7 @@ A **multi-platform social media data collection tool** for learning and research
 | Data Structure Coverage | Search / Post Detail / Comments / Creator | Additional support for **HomeFeed recommendations** and **trending lists** |
 | AI Agent & Bonus Projects | — | Built-in **AI Agent Skill** + **multiple AI Agent / full-stack desktop app source repos** |
 
-👉 Open source is not easy, welcome to subscribe and support: **[View MediaCrawlerPro Project Homepage](https://github.com/MediaCrawlerPro)** ｜ **[Subscription Guide](https://nanmicoder.github.io/MediaCrawler/mediacrawlerpro%E8%AE%A2%E9%98%85.html)**
+👉 Open source is not easy, welcome to subscribe and support: **[View MediaCrawlerPro Homepage & Subscription Guide](https://github.com/MediaCrawlerPro)**
 
 <details>
 <summary>📦 <b>Click to expand: Full Pro features & included AI Agent learning projects</b></summary>
@@ -270,15 +270,6 @@ MediaCrawler supports CSV, JSON, JSONL, Excel, SQLite, and MySQL. See the [Data 
       </td>
       <td valign="middle">
         <a href="https://go.nodemaven.com/MediaCrawleroctober">NodeMaven</a> is an efficient proxy provider for web scraping and automation, offering the highest-quality IPs on the market. Key benefits include 99.9% uptime, ZIP targeting, IP filtering across all proxies (fraud score below 97%), no KYC, and unique free tools such as Proxy Bandwidth Checker, Meta Tag Checker, IP Lookup, and more. MediaCrawler users get 35% off mobile and residential proxies with code <code>CRAWLER35</code>, and 40% off ISP (static) proxies with code <code>CRAWLER40</code>. For Black Friday, use code <code>CRAWLER2X</code> to get double the traffic. 👉 <a href="https://go.nodemaven.com/MediaCrawleroctober">Visit NodeMaven</a>
-      </td>
-    </tr>
-    <tr>
-      <td align="center" valign="middle">
-        <a href="https://dragtokens.com"><img src="docs/static/images/dragtokens_logo.jpg" width="180" alt="DragTokens"></a>
-      </td>
-      <td valign="middle">
-        Thanks to <a href="https://dragtokens.com">DragTokens (Drag API)</a> for sponsoring this project! DragTokens focuses on providing developers with a multi-model API relay service, supporting AI coding tools such as Claude Code, Codex, and Gemini CLI, and covering leading models including GPT, Claude, and Gemini. Rates are as low as 1.1x for the Claude official-client-dedicated group (about 1.55 discount vs. the official API, saving ~84.5%), 0.3x for Codex (about 0.42 discount, saving ~96%), and 0.25x for Gemini (about 0.35 discount, saving ~96.5%), with peak pool throughput reaching 700 million TPM.<br><br>
-        🎁 New users who <a href="https://dragtokens.com">register through this exclusive link</a> receive a sign-up credit, and a single top-up of CNY 100 also earns 10% cash back! Documentation covers getting started, tool configuration, and API examples, so setup and usage both come with guidance. Prompts and model responses are never stored, and dedicated account pools, corporate transfer, and invoicing are available for enterprise and university teams.
       </td>
     </tr>
     <tr>
